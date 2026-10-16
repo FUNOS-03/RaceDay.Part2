@@ -86,3 +86,8 @@ The workflow configuration file is located at:
 ## Author
 
 Created for the RaceDay Part 2 project.
+## GitHub Actions Verification
+
+The RaceDay CI process finished successfully. The outcomes of the automated build and execution tests are presented below.
+
+![Successful GitHub Actions run](github-actions-success.png)
