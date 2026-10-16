@@ -81,7 +81,6 @@ A GitHub Actions workflow automatically restores packages, builds the applicatio
 The workflow configuration file is located at:
 
 `.github/workflows/ci.yml`
-
 ## Author
 
 Created for the RaceDay Part 2 project.
