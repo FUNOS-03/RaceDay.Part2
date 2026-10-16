@@ -1,7 +1,6 @@
 # RaceDay Part 2
 
 ## Project Overview
-
 RaceDay is a web-based API designed to handle information and activities related to races. The application offers features for user sign-up, identity verification, participant profiles, races, divisions, events, registrations, and performance outcomes.
 
 This application was built utilizing ASP.NET Core Web API and the .NET 8 framework.
