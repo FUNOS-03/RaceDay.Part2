@@ -1,0 +1,136 @@
+﻿@model List<RaceDay.web.Models.EventViewModel>
+
+@{
+    ViewData["Title"] = "RaceDay Events";
+    var isOrganiser = Context.Session.GetString("UserRole") == "Organiser";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1>RaceDay Events</h1>
+            <p class="text-muted">
+                Discover upcoming sporting events and challenges.
+            </p>
+        </div>
+
+        @if (isOrganiser)
+        {
+            <a asp-controller="Events"
+               asp-action="Create"
+               class="btn btn-primary">
+                Create New Event
+            </a>
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            No events are currently available.
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var raceEvent in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        @if (!string.IsNullOrWhiteSpace(raceEvent.BannerUrl))
+                        {
+                            <img src="@Url.Action("Banner", "Events", new { blobName = raceEvent.BannerUrl })"
+                                 class="card-img-top"
+                                 alt="@raceEvent.Name banner"
+                                 style="height:200px; object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                 style="height:200px;">
+                                <span class="text-muted">RaceDay Event</span>
+                            </div>
+                        }
+
+                        <div class="card-body">
+
+                            <h5 class="card-title">
+                                @raceEvent.Name
+                            </h5>
+
+                            <p class="card-text text-muted">
+                                @raceEvent.Description
+                            </p>
+
+                            <p>
+                                <strong>Location:</strong>
+                                @raceEvent.Location
+                            </p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                @raceEvent.EventDate.ToString("dd MMMM yyyy")
+                            </p>
+
+                            <p>
+                                <strong>Maximum participants:</strong>
+                                @raceEvent.MaximumParticipants
+                            </p>
+
+                        </div>
+
+                        @if (isOrganiser)
+                        {
+                            <div class="card-footer bg-white">
+
+                                <a asp-controller="Events"
+                                   asp-action="Edit"
+                                   asp-route-id="@raceEvent.Id"
+                                   class="btn btn-outline-primary btn-sm">
+                                    Edit
+                                </a>
+
+                                <form asp-controller="Events"
+                                      asp-action="Delete"
+                                      asp-route-id="@raceEvent.Id"
+                                      method="post"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to delete this event?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger btn-sm">
+                                        Delete
+                                    </button>
+                                </form>
+
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+
+</div>

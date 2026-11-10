@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace RaceDay.API.Models;
 
@@ -16,7 +15,6 @@ public class User
     [StringLength(150)]
     public string Email { get; set; } = string.Empty;
 
-    // Store a password hash, never a plain-text password.
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
 
@@ -24,6 +22,8 @@ public class User
     [RegularExpression("^(Organiser|Participant)$",
         ErrorMessage = "Role must be Organiser or Participant.")]
     public string Role { get; set; } = "Participant";
+
+    public string? ProfilePictureUrl { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

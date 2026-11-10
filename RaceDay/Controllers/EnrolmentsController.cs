@@ -20,6 +20,35 @@ public class EnrolmentsController : ControllerBase
         _context = context;
     }
 
+    // GET: api/enrolments
+    // Organisers can view all participant enrolments.
+    [HttpGet]
+    [Authorize(Roles = "Organiser")]
+    public async Task<IActionResult> GetAllEnrolments()
+    {
+        var enrolments = await _context.Enrolments
+            .AsNoTracking()
+            .Include(e => e.User)
+            .Include(e => e.Event)
+                .ThenInclude(e => e!.EventCategory)
+            .OrderByDescending(e => e.EnrolledAt)
+            .Select(e => new
+            {
+                e.Id,
+                ParticipantName = e.User!.FullName,
+                ParticipantEmail = e.User.Email,
+                EventName = e.Event!.Name,
+                EventLocation = e.Event.Location,
+                EventDate = e.Event.EventDate,
+                Category = e.Event.EventCategory!.Name,
+                e.EnrolledAt,
+                e.Status
+            })
+            .ToListAsync();
+
+        return Ok(enrolments);
+    }
+
     // GET: api/enrolments/my
     // A user can view only their own enrolments.
     [HttpGet("my")]
@@ -28,9 +57,7 @@ public class EnrolmentsController : ControllerBase
         var userId = GetCurrentUserId();
 
         if (userId == null)
-        {
             return Unauthorized();
-        }
 
         var enrolments = await _context.Enrolments
             .AsNoTracking()
@@ -64,28 +91,19 @@ public class EnrolmentsController : ControllerBase
         var userId = GetCurrentUserId();
 
         if (userId == null)
-        {
             return Unauthorized();
-        }
 
         var raceEvent = await _context.Events
             .FirstOrDefaultAsync(e => e.Id == request.EventId);
 
         if (raceEvent == null)
-        {
-            return NotFound(new
-            {
-                message = "Event not found."
-            });
-        }
+            return NotFound(new { message = "Event not found." });
 
         if (raceEvent.EventDate <= DateTime.UtcNow)
-        {
             return BadRequest(new
             {
                 message = "You cannot enrol in an event that has already started."
             });
-        }
 
         var alreadyEnrolled = await _context.Enrolments
             .AnyAsync(e =>
@@ -93,12 +111,10 @@ public class EnrolmentsController : ControllerBase
                 e.EventId == request.EventId);
 
         if (alreadyEnrolled)
-        {
             return Conflict(new
             {
                 message = "You are already enrolled in this event."
             });
-        }
 
         var enrolmentCount = await _context.Enrolments
             .CountAsync(e =>
@@ -106,12 +122,10 @@ public class EnrolmentsController : ControllerBase
                 e.Status == "Enrolled");
 
         if (enrolmentCount >= raceEvent.MaximumParticipants)
-        {
             return Conflict(new
             {
                 message = "This event has reached its participant limit."
             });
-        }
 
         var enrolment = new Enrolment
         {
@@ -146,9 +160,7 @@ public class EnrolmentsController : ControllerBase
         var userId = GetCurrentUserId();
 
         if (userId == null)
-        {
             return Unauthorized();
-        }
 
         var enrolment = await _context.Enrolments
             .FirstOrDefaultAsync(e =>
@@ -156,21 +168,14 @@ public class EnrolmentsController : ControllerBase
                 e.UserId == userId.Value);
 
         if (enrolment == null)
-        {
-            return NotFound(new
-            {
-                message = "Enrolment not found."
-            });
-        }
+            return NotFound(new { message = "Enrolment not found." });
 
         if (await _context.RaceResults
             .AnyAsync(r => r.EnrolmentId == enrolment.Id))
-        {
             return Conflict(new
             {
                 message = "An enrolment with a recorded result cannot be cancelled."
             });
-        }
 
         _context.Enrolments.Remove(enrolment);
         await _context.SaveChangesAsync();
@@ -198,4 +203,3 @@ public class EnrolmentRequest
         ErrorMessage = "A valid event ID is required.")]
     public int EventId { get; set; }
 }
-

@@ -1,0 +1,127 @@
+﻿@model List<RaceDay.web.Models.EventViewModel>
+
+@{
+    ViewData["Title"] = "Upcoming Events";
+}
+
+<div class="container py-4">
+
+    <h1>Upcoming RaceDay Events</h1>
+    <p class="text-muted">
+        Discover events and register to participate.
+    </p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @{
+        var upcomingEvents = Model?
+        .Where(e => e.EventDate.Date >= DateTime.Today)
+        .OrderBy(e => e.EventDate)
+        .ToList() ?? new List<RaceDay.web.Models.EventViewModel>();
+    }
+
+    @if (!upcomingEvents.Any())
+    {
+        <div class="card p-4 text-center">
+            <h4>No upcoming events available</h4>
+            <p>Check again later for upcoming sporting events.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+
+            @foreach (var raceEvent in upcomingEvents)
+            {
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        @if (!string.IsNullOrWhiteSpace(raceEvent.BannerUrl))
+                        {
+                            <img src="@Url.Action("Banner", "Events", new { blobName = raceEvent.BannerUrl })"
+                                 class="card-img-top"
+                                 alt="@raceEvent.Name banner"
+                                 style="height:210px; object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                 style="height:210px;">
+                                <span class="text-muted">RaceDay Event</span>
+                            </div>
+                        }
+
+                        <div class="card-body">
+
+                            <h4 class="card-title">
+                                @raceEvent.Name
+                            </h4>
+
+                            <p class="text-muted">
+                                @raceEvent.Description
+                            </p>
+
+                            <p>
+                                <strong>Location:</strong>
+                                @raceEvent.Location
+                            </p>
+
+                            <p>
+                                <strong>Date:</strong>
+                                @raceEvent.EventDate.ToString("dd MMMM yyyy")
+                            </p>
+
+                            <p>
+                                <strong>Maximum participants:</strong>
+                                @raceEvent.MaximumParticipants
+                            </p>
+
+                            <form asp-controller="ParticipantEvents"
+                                  asp-action="Enrol"
+                                  method="post">
+
+                                @Html.AntiForgeryToken()
+
+                                <input type="hidden"
+                                       name="eventId"
+                                       value="@raceEvent.Id" />
+
+                                <button type="submit"
+                                        class="btn btn-primary w-100">
+                                    Enrol Now
+                                </button>
+
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="ParticipantEvents"
+           asp-action="MyEnrolments"
+           class="btn btn-outline-primary">
+            View My Enrolments
+        </a>
+    </div>
+
+</div>
+
+

@@ -1,0 +1,144 @@
+﻿@model RaceDay.web.Models.EventViewModel
+
+@{
+    ViewData["Title"] = "Create Event";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card p-4 shadow-sm">
+                <div class="card-body">
+
+                    <h1>Create a RaceDay Event</h1>
+                    <p class="text-muted">
+                        Enter the details of the new sporting event.
+                    </p>
+
+                    <form asp-controller="Events"
+                          asp-action="Create"
+                          method="post"
+                          enctype="multipart/form-data">
+
+                        <div asp-validation-summary="All"
+                             class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label fw-bold">
+                                Event Name
+                            </label>
+                            <input asp-for="Name"
+                                   class="form-control"
+                                   placeholder="e.g. Pretoria City Marathon" />
+                            <span asp-validation-for="Name"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description"
+                                   class="form-label fw-bold">
+                                Description
+                            </label>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Describe the event"></textarea>
+                            <span asp-validation-for="Description"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Location"
+                                   class="form-label fw-bold">
+                                Location
+                            </label>
+                            <input asp-for="Location"
+                                   class="form-control"
+                                   placeholder="Enter event location" />
+                            <span asp-validation-for="Location"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EventDate"
+                                   class="form-label fw-bold">
+                                Event Date
+                            </label>
+                            <input asp-for="EventDate"
+                                   type="date"
+                                   class="form-control" />
+                            <span asp-validation-for="EventDate"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="MaximumParticipants"
+                                   class="form-label fw-bold">
+                                Maximum Participants
+                            </label>
+                            <input asp-for="MaximumParticipants"
+                                   type="number"
+                                   class="form-control" />
+                            <span asp-validation-for="MaximumParticipants"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EventCategoryId"
+                                   class="form-label fw-bold">
+                                Event Category
+                            </label>
+
+                            <select asp-for="EventCategoryId"
+                                    class="form-select"
+                                    asp-items="@(new Microsoft.AspNetCore.Mvc.Rendering.SelectList(Model.Categories, "Id", "Name"))">
+                                <option value="">Select a category</option>
+                            </select>
+
+                            <span asp-validation-for="EventCategoryId"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="BannerImage"
+                                   class="form-label fw-bold">
+                                Event Banner Image
+                            </label>
+
+                            <input asp-for="BannerImage"
+                                   type="file"
+                                   class="form-control"
+                                   accept=".jpg,.jpeg,.png,.webp" />
+
+                            <div class="form-text">
+                                Optional. Accepted formats: JPG, PNG and WEBP.
+                                Maximum file size: 5 MB.
+                            </div>
+
+                            <span asp-validation-for="BannerImage"
+                                  class="text-danger"></span>
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary btn-lg">
+                            Create Event
+                        </button>
+
+                        <a asp-controller="Events"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary btn-lg ms-2">
+                            Cancel
+                        </a>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -19,8 +19,6 @@ public class CategoriesController : ControllerBase
         _context = context;
     }
 
-    // GET: api/categories
-    // Any authenticated user can view categories.
     [HttpGet]
     public async Task<ActionResult<IEnumerable<EventCategory>>> GetCategories()
     {
@@ -32,7 +30,6 @@ public class CategoriesController : ControllerBase
         return Ok(categories);
     }
 
-    // GET: api/categories/1
     [HttpGet("{id:int}")]
     public async Task<ActionResult<EventCategory>> GetCategory(int id)
     {
@@ -51,8 +48,6 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
-    // POST: api/categories
-    // Only Organisers can create categories.
     [HttpPost]
     [Authorize(Roles = "Organiser")]
     public async Task<ActionResult<EventCategory>> CreateCategory(
@@ -83,8 +78,6 @@ public class CategoriesController : ControllerBase
             category);
     }
 
-    // PUT: api/categories/1
-    // Only Organisers can update categories.
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Organiser")]
     public async Task<ActionResult<EventCategory>> UpdateCategory(
@@ -124,8 +117,6 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
-    // DELETE: api/categories/1
-    // Only Organisers can delete categories.
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "Organiser")]
     public async Task<IActionResult> DeleteCategory(int id)

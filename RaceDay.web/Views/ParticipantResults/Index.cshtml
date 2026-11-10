@@ -1,0 +1,81 @@
+﻿@model List<RaceDay.web.Models.ParticipantResultViewModel>
+
+@{
+    ViewData["Title"] = "My Race Results";
+}
+
+<div class="container py-4">
+
+    <div class="mb-4">
+        <h1>My Race Results</h1>
+        <p class="text-muted">
+            Track your race performances, finishing times and positions.
+        </p>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="card p-4 text-center">
+            <h4>No results available yet</h4>
+            <p>
+                Your race results will appear here once an organiser
+                has recorded your finishing time and position.
+            </p>
+            <a asp-controller="ParticipantEvents"
+               asp-action="Index"
+               class="btn btn-primary">
+                Explore Events
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card p-3">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Category</th>
+                            <th>Finishing Position</th>
+                            <th>Finish Time</th>
+                            <th>Recorded Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model)
+                        {
+                            <tr>
+                                <td>@result.EventName</td>
+                                <td>@result.Category</td>
+                                <td>
+                                    <span class="badge bg-success">
+                                        @result.FinishingPosition
+                                    </span>
+                                </td>
+                                <td>@result.FinishTime</td>
+                                <td>@result.RecordedAt.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <div class="mt-4">
+        <a asp-controller="Participant"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+            Back to Dashboard
+        </a>
+    </div>
+
+</div>

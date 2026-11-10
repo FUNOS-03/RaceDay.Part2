@@ -1,0 +1,137 @@
+﻿@model RaceDay.web.Models.OrganiserResultsViewModel
+
+@{
+    ViewData["Title"] = "Manage Race Results";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>Manage Race Results</h1>
+            <p class="text-muted">Record and review participant race results.</p>
+        </div>
+        <a asp-controller="Organiser" asp-action="Index"
+           class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card p-4 mb-5">
+        <h4 class="mb-3">Record a Race Result</h4>
+
+        <form asp-controller="OrganiserResults" asp-action="Record" method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="mb-3">
+                <label asp-for="EnrolmentId" class="form-label">
+                    Participant and Event
+                </label>
+
+                <select asp-for="EnrolmentId" class="form-select">
+                    <option value="">-- Select participant enrolment --</option>
+
+                    @foreach (var enrolment in Model.Enrolments)
+                    {
+                        <option value="@enrolment.Id">
+                            @enrolment.ParticipantName -
+                            @enrolment.EventName
+                        </option>
+                    }
+                </select>
+
+                <span asp-validation-for="EnrolmentId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FinishingPosition" class="form-label">
+                    Finishing Position
+                </label>
+
+                <input asp-for="FinishingPosition"
+                       type="number"
+                       min="1"
+                       class="form-control"
+                       placeholder="Example: 1" />
+
+                <span asp-validation-for="FinishingPosition" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FinishTime" class="form-label">
+                    Finish Time
+                </label>
+
+                <input asp-for="FinishTime"
+                       type="text"
+                       class="form-control"
+                       placeholder="HH:MM:SS (Example: 01:25:30)" />
+
+                <span asp-validation-for="FinishTime" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Record Result
+            </button>
+        </form>
+    </div>
+
+    <div class="card p-4">
+        <h4 class="mb-3">Recorded Race Results</h4>
+
+        @if (Model.Results == null || !Model.Results.Any())
+        {
+            <p class="text-muted">No race results have been recorded yet.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Participant</th>
+                            <th>Email</th>
+                            <th>Event</th>
+                            <th>Position</th>
+                            <th>Finish Time</th>
+                            <th>Recorded Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var result in Model.Results)
+                        {
+                            <tr>
+                                <td>@result.ParticipantName</td>
+                                <td>@result.ParticipantEmail</td>
+                                <td>@result.EventName</td>
+                                <td>@result.FinishingPosition</td>
+                                <td>@result.FinishTime</td>
+                                <td>@result.RecordedAt.ToString("dd MMM yyyy")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

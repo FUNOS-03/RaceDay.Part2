@@ -33,4 +33,6 @@ public class Event
     public int EventCategoryId { get; set; }
 
     public EventCategory? EventCategory { get; set; }
+
+    public string? BannerUrl { get; set; }
 }

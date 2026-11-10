@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RaceDay.API.Data;
 using RaceDay.API.Models;
+using RaceDay.API.Services;
 
 namespace RaceDay.API.Controllers;
 
@@ -13,14 +14,26 @@ namespace RaceDay.API.Controllers;
 public class EventsController : ControllerBase
 {
     private readonly RaceDayContext _context;
+    private readonly BlobStorageService _blobStorageService;
 
-    public EventsController(RaceDayContext context)
+    private const long MaxBannerSize = 5 * 1024 * 1024;
+
+    private static readonly string[] AllowedImageTypes =
+    {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    };
+
+    public EventsController(
+        RaceDayContext context,
+        BlobStorageService blobStorageService)
     {
         _context = context;
+        _blobStorageService = blobStorageService;
     }
 
     // GET: api/events
-    // Any authenticated user can view events.
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Event>>> GetEvents()
     {
@@ -57,7 +70,11 @@ public class EventsController : ControllerBase
     // Only Organisers can create events.
     [HttpPost]
     [Authorize(Roles = "Organiser")]
-    public async Task<ActionResult<Event>> CreateEvent(Event newEvent)
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaxBannerSize + 1024 * 1024)]
+    public async Task<ActionResult<Event>> CreateEvent(
+        [FromForm] Event newEvent,
+        [FromForm] IFormFile? bannerImage)
     {
         var validationErrors = ValidateEvent(newEvent);
 
@@ -77,9 +94,32 @@ public class EventsController : ControllerBase
             });
         }
 
+        if (bannerImage != null)
+        {
+            var imageError = ValidateBanner(bannerImage);
+
+            if (imageError != null)
+            {
+                return BadRequest(new
+                {
+                    message = imageError
+                });
+            }
+
+            await using var stream = bannerImage.OpenReadStream();
+
+            newEvent.BannerUrl =
+                await _blobStorageService.UploadEventBannerAsync(
+                    stream,
+                    bannerImage.FileName,
+                    bannerImage.ContentType);
+        }
+
         newEvent.Name = newEvent.Name.Trim();
         newEvent.Description = newEvent.Description?.Trim();
         newEvent.Location = newEvent.Location.Trim();
+
+        newEvent.EventCategory = null;
 
         _context.Events.Add(newEvent);
         await _context.SaveChangesAsync();
@@ -94,9 +134,12 @@ public class EventsController : ControllerBase
     // Only Organisers can update events.
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Organiser")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaxBannerSize + 1024 * 1024)]
     public async Task<ActionResult<Event>> UpdateEvent(
         int id,
-        Event updatedEvent)
+        [FromForm] Event updatedEvent,
+        [FromForm] IFormFile? bannerImage)
     {
         var existingEvent = await _context.Events.FindAsync(id);
 
@@ -126,13 +169,35 @@ public class EventsController : ControllerBase
             });
         }
 
+        if (bannerImage != null)
+        {
+            var imageError = ValidateBanner(bannerImage);
+
+            if (imageError != null)
+            {
+                return BadRequest(new
+                {
+                    message = imageError
+                });
+            }
+
+            await using var stream = bannerImage.OpenReadStream();
+
+            existingEvent.BannerUrl =
+                await _blobStorageService.UploadEventBannerAsync(
+                    stream,
+                    bannerImage.FileName,
+                    bannerImage.ContentType);
+        }
+
         existingEvent.Name = updatedEvent.Name.Trim();
         existingEvent.Description = updatedEvent.Description?.Trim();
         existingEvent.Location = updatedEvent.Location.Trim();
         existingEvent.EventDate = updatedEvent.EventDate;
         existingEvent.MaximumParticipants =
             updatedEvent.MaximumParticipants;
-        existingEvent.EventCategoryId = updatedEvent.EventCategoryId;
+        existingEvent.EventCategoryId =
+            updatedEvent.EventCategoryId;
 
         await _context.SaveChangesAsync();
 
@@ -164,12 +229,34 @@ public class EventsController : ControllerBase
         return NoContent();
     }
 
-    private static Dictionary<string, string[]> ValidateEvent(Event raceEvent)
+    private static string? ValidateBanner(IFormFile bannerImage)
+    {
+        if (bannerImage.Length == 0 ||
+            bannerImage.Length > MaxBannerSize)
+        {
+            return "The banner image must be smaller than 5 MB.";
+        }
+
+        if (!AllowedImageTypes.Contains(
+            bannerImage.ContentType.ToLowerInvariant()))
+        {
+            return "Only JPG, PNG and WEBP banner images are allowed.";
+        }
+
+        return null;
+    }
+
+    private static Dictionary<string, string[]> ValidateEvent(
+        Event raceEvent)
     {
         var errors = new Dictionary<string, string[]>();
-        var results = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+
+        var results =
+            new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+
         var validationContext =
-            new System.ComponentModel.DataAnnotations.ValidationContext(raceEvent);
+            new System.ComponentModel.DataAnnotations.ValidationContext(
+                raceEvent);
 
         System.ComponentModel.DataAnnotations.Validator.TryValidateObject(
             raceEvent,
@@ -195,3 +282,5 @@ public class EventsController : ControllerBase
         return errors;
     }
 }
+
+
