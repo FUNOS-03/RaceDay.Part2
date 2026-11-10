@@ -6,7 +6,7 @@
 - **Student Number:** ST10456188
 - **Module:** Programming 2B
 - **Assessment:** Part 3 – Portfolio of Evidence (POE)
-- **Project Name:** RaceDay Sporting Events Management System
+- **Project Name:** RaceDay
 
 ---
 
