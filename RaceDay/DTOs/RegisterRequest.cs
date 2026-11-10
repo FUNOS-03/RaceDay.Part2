@@ -25,4 +25,3 @@ public class RegisterRequest
         ErrorMessage = "Role must be Organiser or Participant.")]
     public string Role { get; set; } = "Participant";
 }
-
